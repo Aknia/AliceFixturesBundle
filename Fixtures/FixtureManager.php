@@ -60,6 +60,10 @@ class FixtureManager implements FixtureManagerInterface
      * @var SchemaToolInterface
      */
     protected $schemaTool;
+    /**
+     * @var array
+     */
+    protected $classes;
 
     /**
      * @param array $options
@@ -148,6 +152,11 @@ class FixtureManager implements FixtureManagerInterface
             $loader->setReferences($references);
             $this->logDebug(sprintf('Loading file: %s ...', $file['path']));
             $newObjects = $loader->load($file['path']);
+
+            foreach ($newObjects as $object) {
+                $this->classes[] = get_class($object);
+            }
+
             $references = $loader->getReferences();
 
             $this->logDebug("Loaded ".count($newObjects)." file '" . $file['path'] . "'.");
@@ -348,5 +357,14 @@ class FixtureManager implements FixtureManagerInterface
                 $proc->postProcess($obj);
             }
         }
+    }
+
+    public function clean()
+    {
+        $this->classes = array_unique($this->classes);
+
+        $schemaTool = $this->getSchemaTool();
+        $schemaTool->dropSchema();
+        $schemaTool->createSchema();
     }
 }
