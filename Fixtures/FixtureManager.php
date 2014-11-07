@@ -364,7 +364,7 @@ class FixtureManager implements FixtureManagerInterface
         $this->classes = array_unique($this->classes);
 
         $schemaTool = $this->getSchemaTool();
-        $schemaTool->dropSchema();
-        $schemaTool->createSchema();
+        $schemaTool->dropSchema($this->classes);
+        $schemaTool->createSchema($this->classes);
     }
 }

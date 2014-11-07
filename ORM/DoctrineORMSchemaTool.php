@@ -44,7 +44,7 @@ class DoctrineORMSchemaTool implements SchemaToolInterface
             $schemaTool = new DoctrineSchemaTool($objectManager);
 
             if ($classes) {
-                $schemaTool->dropSchema($classes);
+                $schemaTool->dropSchema($this->getMetadatas($objectManager, $classes));
             } else {
                 $schemaTool->dropDatabase();
             }
@@ -57,15 +57,27 @@ class DoctrineORMSchemaTool implements SchemaToolInterface
     public function createSchema(array $classes = null)
     {
         $this->foreachObjectManagers(function(ObjectManager $objectManager) use ($classes) {
+            $schemaTool = new DoctrineSchemaTool($objectManager);
+
             if ($classes) {
-                $schemaTool->createSchema($classes);
+                $schemaTool->createSchema($this->getMetadatas($objectManager, $classes));
             } else {
                 $metadata = $objectManager->getMetadataFactory()->getAllMetadata();
 
-                $schemaTool = new DoctrineSchemaTool($objectManager);
                 $schemaTool->createSchema($metadata);
             }
         });
+    }
+
+    private function getMetadatas(ObjectManager $objectManager, array $classes)
+    {
+        $array = [];
+
+        foreach ($classes as $class) {
+            $array[] = $objectManager->getClassMetadata($class);
+        }
+
+        return $array;
     }
 
     private function foreachObjectManagers($callback)
