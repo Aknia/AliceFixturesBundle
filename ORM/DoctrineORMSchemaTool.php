@@ -35,6 +35,21 @@ class DoctrineORMSchemaTool implements SchemaToolInterface
         $this->managerRegistry = $managerRegistry;
     }
 
+    public function truncateSchema(array $classes)
+    {
+        $this->foreachObjectManagers(function(ObjectManager $objectManager) use ($classes) {
+            $connection = $objectManager->getConnection();
+
+            $metadatas = $this->getMetadatas($objectManager, $classes);
+
+            $connection->query('SET FOREIGN_KEY_CHECKS = 0;');
+            foreach ($metadatas as $metadata) {
+                $connection->query('TRUNCATE '. $metadata->getTableName() .';');
+            }
+            $connection->query('SET FOREIGN_KEY_CHECKS = 1;');
+        });
+    }
+
     /**
      * {@inheritDoc}
      */
