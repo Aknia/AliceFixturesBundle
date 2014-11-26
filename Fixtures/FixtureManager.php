@@ -366,12 +366,17 @@ class FixtureManager implements FixtureManagerInterface
         return $this;
     }
 
-    public function clean()
+    public function clean($softReset = false)
     {
         $this->classes = array_unique($this->classes);
 
         $schemaTool = $this->getSchemaTool();
-        $schemaTool->dropSchema($this->classes);
-        $schemaTool->createSchema($this->classes);
+
+        if ($softReset) {
+            $schemaTool->truncateSchema($this->classes);
+        } else {
+            $schemaTool->dropSchema($this->classes);
+            $schemaTool->createSchema($this->classes);
+        }
     }
 }
