@@ -63,7 +63,7 @@ class FixtureManager implements FixtureManagerInterface
     /**
      * @var array
      */
-    protected $classes;
+    protected $classes = [];
 
     /**
      * @param array $options
