@@ -135,6 +135,8 @@ class FixtureManager implements FixtureManagerInterface
      */
     public function load(FixtureSet $set, array $initialReferences = array())
     {
+        $this->schemaTool->dropSchema();
+        $this->schemaTool->createSchema();
         $loaders = $this->createNeededLoaders($set);
 
         // Objects are the loaded entities without "local".
@@ -161,11 +163,11 @@ class FixtureManager implements FixtureManagerInterface
 
             $this->logDebug("Loaded ".count($newObjects)." file '" . $file['path'] . "'.");
             $objects = array_merge($objects, $newObjects);
-        }
 
-        if ($set->getDoPersist()) {
-            $this->persist($objects, $set->getDoDrop());
-            $this->logDebug("Persisted " . count($objects) . " loaded objects.");
+            if ($set->getDoPersist()) {
+                $this->persist($objects, false);
+                $this->logDebug("Persisted " . count($objects) . " loaded objects.");
+            }
         }
 
         return $objects;
