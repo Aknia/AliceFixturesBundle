@@ -60,6 +60,10 @@ class FixtureManager implements FixtureManagerInterface
      * @var SchemaToolInterface
      */
     protected $schemaTool;
+    /**
+     * @var array
+     */
+    protected $classes = [];
 
     /**
      * @param array $options
@@ -131,6 +135,8 @@ class FixtureManager implements FixtureManagerInterface
      */
     public function load(FixtureSet $set, array $initialReferences = array())
     {
+        $this->schemaTool->dropSchema();
+        $this->schemaTool->createSchema();
         $loaders = $this->createNeededLoaders($set);
 
         // Objects are the loaded entities without "local".
@@ -148,15 +154,20 @@ class FixtureManager implements FixtureManagerInterface
             $loader->setReferences($references);
             $this->logDebug(sprintf('Loading file: %s ...', $file['path']));
             $newObjects = $loader->load($file['path']);
+
+            foreach ($newObjects as $object) {
+                $this->classes[] = get_class($object);
+            }
+
             $references = $loader->getReferences();
 
             $this->logDebug("Loaded ".count($newObjects)." file '" . $file['path'] . "'.");
             $objects = array_merge($objects, $newObjects);
-        }
 
-        if ($set->getDoPersist()) {
-            $this->persist($objects, $set->getDoDrop());
-            $this->logDebug("Persisted " . count($objects) . " loaded objects.");
+            if ($set->getDoPersist()) {
+                $this->persist($objects, false);
+                $this->logDebug("Persisted " . count($objects) . " loaded objects.");
+            }
         }
 
         return $objects;
@@ -347,6 +358,35 @@ class FixtureManager implements FixtureManagerInterface
             foreach ($objects as $obj) {
                 $proc->postProcess($obj);
             }
+        }
+    }
+
+    public function addClass($class)
+    {
+        $this->classes[] = $class;
+
+        return $this;
+    }
+
+    public function hardClean()
+    {
+        $schemaTool = $this->getSchemaTool();
+
+        $schemaTool->dropSchema();
+        $schemaTool->createSchema();
+    }
+
+    public function clean($softReset = false)
+    {
+        $this->classes = array_unique($this->classes);
+
+        $schemaTool = $this->getSchemaTool();
+
+        if ($softReset) {
+            $schemaTool->truncateSchema($this->classes);
+        } else {
+            $schemaTool->dropSchema($this->classes);
+            $schemaTool->createSchema($this->classes);
         }
     }
 }
