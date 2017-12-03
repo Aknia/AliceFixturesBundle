@@ -11,12 +11,10 @@
 
 namespace h4cc\AliceFixturesBundle\ORM;
 
-use Nelmio\Alice\ORMInterface as NelmioORMInterface;
-
 /**
  * Interface for Object Relation Mapping operations.
  */
-interface ORMInterface extends NelmioORMInterface
+interface ORMInterface
 {
     /**
      * Removes entities.
