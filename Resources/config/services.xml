@@ -28,6 +28,10 @@ file that was distributed with this source code.
     <services>
         <!-- Factory for creating Alice loaders. -->
         <service id="h4cc_alice_fixtures.loader.factory" class="%h4cc_alice_fixtures.loader.factory.class%"/>
+
+        <prototype namespace="h4cc\AliceFixturesBundle\Command\" resource="../../Command/*">
+            <tag name="console.command" />
+        </prototype>
     </services>
 
 </container>
